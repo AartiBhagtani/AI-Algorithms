@@ -7,15 +7,14 @@ import java.util.*;
 class Cell
 {
   int parent_i, parent_j;
-  double f, g, h;
+  double h;
   int rows = 4,cols = 4;
   int maze[][] = new int[rows][cols];
   int dest_i = 2, dest_j = 2;
   int src_i = 3, src_j = 0;
 
-  public Cell(double g, double h,int p_i, int p_j)
+  public Cell( double h,int p_i, int p_j)
   {
-    this.g = g;
     this.h = h;
     parent_i = p_i;
     parent_j = p_j;
@@ -71,13 +70,13 @@ class Cell
       Stack<Cell> path = new Stack<Cell>();
       while(!(cellDetails[row][col].parent_i == row && cellDetails[row][col].parent_j == col ))
       {
-        path.push(new Cell(0,0,row, col));
+        path.push(new Cell(0,row, col));
         int temp_row = cellDetails[row][col].parent_i;
         int temp_col = cellDetails[row][col].parent_j;
         row = temp_row;
         col = temp_col;
       }
-      path.push(new Cell(0,0,row, col));
+      path.push(new Cell(0,row, col));
       while (!path.isEmpty())
       {
           Cell ans = path.pop();
@@ -86,7 +85,7 @@ class Cell
       return;
   }
 
-  public void AStarAlgo(int arr[][])
+  public void HillClimbingAlgo(int arr[][])
   {
     // If the source is out of range
     if (isValid (src_i,src_j) == false)
@@ -124,21 +123,21 @@ class Cell
     {
       for (int j=0; j<cols; j++)
       {
-        cellDetails[i][j] = new Cell(Double.MAX_VALUE,Double.MAX_VALUE,-1,-1);
+        cellDetails[i][j] = new Cell(Double.MAX_VALUE,-1,-1);
         // cellDetails[i][j].f = cellDetails[i][j].g + cellDetails[i][j].h;
       }
     }
     // initializing source node
     int i = src_i;
     int j = src_j;
-    cellDetails[i][j] = new Cell(1,1,i,j);
+    cellDetails[i][j] = new Cell(1,i,j);
     // cellDetails[i][j].f = cellDetails[i][j].g + cellDetails[i][j].h;
 
     // make lists-
     boolean foundDest = false;
     boolean closeList[][] = new boolean[rows][cols];
     Stack<Cell> openList = new Stack<>();
-    openList.push(new Cell(cellDetails[i][j].g, cellDetails[i][j].h, i, j));
+    openList.push(new Cell(cellDetails[i][j].h, i, j));
     while(!openList.isEmpty())
     {
 
@@ -162,7 +161,7 @@ class Cell
       // W -->  West           (i, j-1)
       //
       // To store the 'g', 'h' 4 successors
-      double gNew = 0, hNew = 0;
+      double hNew = 0;
 
       //----------- 1st Successor (North) ------------
       if(isValid(i-1,j))
@@ -181,11 +180,7 @@ class Cell
         }
         else if (closeList[i-1][j] == false && isUnBlocked(arr, i-1, j) == true)
         {
-            gNew = cellDetails[i][j].g + 1;
             hNew = calculateHValue (i-1, j);
-            // System.out.println("Not found : "+hNew);
-
-
             // If it isn’t on the open list, add it to
             // the open list. Make the current square
             // the parent of this square. Record the
@@ -194,13 +189,13 @@ class Cell
             // If it is on the open list already, check
             // to see if this path to that square is better,
             // using 'f' cost as the measure.
-            if (cellDetails[i-1][j].h + cellDetails[i-1][j].g == Double.MAX_VALUE ||
-                    cellDetails[i-1][j].h + cellDetails[i-1][j].g > hNew+gNew)
+            if (cellDetails[i-1][j].h == Double.MAX_VALUE ||
+                    cellDetails[i-1][j].h > hNew)
             {
-                openList.push(new Cell(gNew, hNew, i-1, j));
+                openList.push(new Cell(hNew, i-1, j));
 
                 // Update the details of this cell
-                cellDetails[i-1][j] = new Cell(gNew,hNew,i,j);
+                cellDetails[i-1][j] = new Cell(hNew,i,j);
             }
           }
       }
@@ -220,16 +215,15 @@ class Cell
         }
         else if (closeList[i+1][j] == false && isUnBlocked(arr, i+1, j) == true)
         {
-          gNew = cellDetails[i][j].g + 1;
           hNew = calculateHValue (i+1, j);
 
-          if (cellDetails[i+1][j].h + cellDetails[i+1][j].g == Double.MAX_VALUE ||
-                  cellDetails[i+1][j].h + cellDetails[i+1][j].g > hNew+gNew)
+          if (cellDetails[i+1][j].h  == Double.MAX_VALUE ||
+                  cellDetails[i+1][j].h > hNew)
           {
-              openList.push(new Cell(gNew, hNew, i+1, j));
+              openList.push(new Cell(hNew, i+1, j));
 
               // Update the details of this cell
-              cellDetails[i+1][j] = new Cell(gNew,hNew,i,j);
+              cellDetails[i+1][j] = new Cell(hNew,i,j);
           }
         }
       }
@@ -247,17 +241,16 @@ class Cell
         }
         else if (closeList[i][j+1] == false && isUnBlocked(arr, i, j+1) == true)
         {
-          gNew = cellDetails[i][j].g + 1;
           hNew = calculateHValue (i, j+1);
           // System.out.println("Not found : "+hNew);
 
-        if (cellDetails[i][j+1].h + cellDetails[i][j+1].g == Double.MAX_VALUE ||
-                  cellDetails[i][j+1].h + cellDetails[i][j+1].g > hNew+gNew)
+        if (cellDetails[i][j+1].h == Double.MAX_VALUE ||
+                  cellDetails[i][j+1].h > hNew)
           {
-              openList.push(new Cell(gNew, hNew, i, j+1));
+              openList.push(new Cell(hNew, i, j+1));
 
               // Update the details of this cell
-              cellDetails[i][j+1] = new Cell(gNew,hNew,i,j);
+              cellDetails[i][j+1] = new Cell(hNew,i,j);
           }
         }
       }
@@ -276,17 +269,16 @@ class Cell
         }
         else if (closeList[i][j-1] == false && isUnBlocked(arr, i, j-1) == true)
         {
-          gNew = cellDetails[i][j].g + 1;
           hNew = calculateHValue (i, j-1);
           // System.out.println("Not found : "+hNew);
 
-          if (cellDetails[i][j-1].h + cellDetails[i][j-1].g == Double.MAX_VALUE ||
-                  cellDetails[i][j-1].h + cellDetails[i][j-1].g > hNew+gNew)
+          if (cellDetails[i][j-1].h == Double.MAX_VALUE ||
+                  cellDetails[i][j-1].h > hNew)
           {
-              openList.push(new Cell(gNew, hNew, i, j-1));
+              openList.push(new Cell(hNew, i, j-1));
 
               // Update the details of this cell
-              cellDetails[i][j-1] = new Cell(gNew,hNew,i,j);
+              cellDetails[i][j-1] = new Cell(hNew,i,j);
           }
         }
       }
